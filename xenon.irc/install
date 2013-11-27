@@ -1,0 +1,61 @@
+#!/bin/sh
+
+# quick install script for [(xenon!irc)] release-1 by folk!ben-z
+#    available for download from http://benz.staticky.com
+
+if [ "$1" = "" ]; then
+ echo "[(xenon!irc)]: you must supply a directory to install to!"
+ echo "[      !    ]:    use . for the current directory"
+ exit 0
+fi
+
+if [ ! -f xenon.irc ]; then
+ echo "[(xenon!irc)]: sorry, you dont have xenon.irc :P"
+ echo "[      !    ]: download it from scripts.bitchx.com"
+ exit 0
+fi
+
+echo "(x) would you like to see if a newer version of xenon is available?"
+echo -n "(x) [y/n?]: "
+read avail
+if [ "$avail" = "y" ]; then
+ echo "(x) attempting connection to the xenon authorization box.. "
+ telnet benz.staticky.com 1>/tmp/install.tmp 2>/tmp/install.tmp &
+ sleep 2
+ killall -9 telnet 1>/dev/null 2>/dev/null
+ cat /tmp/install.tmp | grep xe >/dev/null 2>&1
+ if [ $? -eq 0 ]; then
+  echo "(x) a new version of xenon is available!"
+  echo "(x) find it at http://benz.staticky.com"
+ fi
+ echo "(x) continuing with the installation.. "
+fi
+
+if [ -f $1 ]; then
+ echo "(x) are you sure you want to install to $1?"
+ echo "(x)  (all xenon files will be replaced)"
+ echo -n "(x) [y/n?]: "
+ read choice2
+ if [ "$choice2" != "y" ]; then
+  echo "(x) aborting installation.. " 
+  exit 0
+ fi
+fi
+
+echo "(x) creating $1/xenon and $1/xenon/modules.. "
+mkdir $1/xenon
+mv xenon.irc $1/xenon
+mv xenon.away $1/xenon
+mkdir $1/xenon/modules
+echo "(x) moving script files to the proper location.. "
+mv modules/xformat.m $1/xenon/modules
+mv modules/config.m $1/xenon/modules
+mv modules/xhelp.m $1/xenon/modules
+echo "(x) linking /home/`whoami`/.BitchX/xenon to $1/xenon/xenon.irc"
+ln -s $1/xenon/xenon.irc /home/`whoami`/.BitchX/xenon 
+echo "(x) done."
+
+echo ""
+echo "(x) thank you for using [(xenon!irc)] release-1 (folk!ben-z)"
+exit 0
+

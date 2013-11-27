@@ -1,0 +1,333 @@
+## ---  --
+##  --- -
+##   ---  [(xenon!irc)]: bitchX-75+linux 2.2.2
+##  - --- 
+## --  ---
+
+## xenon!irc v1.release for bitchx
+##    crafted by folk + ben-z
+
+## notes from ben-z:
+#     i dunno what to tell you.. if you like this script, great. if you dont, 
+#     oh well. there arent that many formats to choose from so if you dont 
+#     have a very strong taste for purple and cyan i dont suggest even
+#     loading xenon. since this is a first release there isnt really anything
+#     special besides all the regular formats and functions, but dont worry
+#     there will be more soon.. you can expect an auto html page awaylog 
+#     generator, xenon encryption, and some more purdy formats in the next ver.
+#                 - ben-z@alloymail.com / http://benz.staticky.com
+
+## props from ben-z:
+#     first of all both folk and i have got to give mad props to #fts(2) 
+#     and #violators @ undernet for all the "emotional support" and shit 
+#     like that. also id like to say wsup to #bitchx, and #slackware (uNF!).
+#     of course ive got to thank folk for making this motherfucker with me..
+#     uhm.. ok i guess i'll just start naming people now: madli0n, rhodie,
+#     axi0n, cax, metalman, eklipz, ka0s, fenix, th3shadow, dethwish, m0n, 
+#     atomiC-, noob, panasync (of course), c0sm0s, chawp, alex, pyroice,
+#     xploit (delerium), cinema309, and that freaky little bitch ferko..
+## notes from folk:
+#     Thanks for using xenon (ben-z!folk). Would like to just say that this
+#     script is not stoping here. More release's will follow this.
+		 - folk@nye.net
+## props from folk:
+#     #Fts(2) - forfeit aka ben-z crew, #Violators - my crew, #BitchX on unet,
+#     inode,wamphyri - helping me with stuff.
+
+### default vars ###
+@ cl    = [\[0m
+@ blk   = [\[0m\\[30m
+@ blu   = [\[0m\\[34m
+@ grn   = [\[0m\\[32m
+@ cyn   = [\[0m\\[36m
+@ red   = [\[0m\\[31m
+@ prp   = [\[0m\\[35m
+@ yel   = [\[0m\\[33m
+@ wht   = [\[0m\\[37m
+@ hblk  = [\[1m\\[30m
+@ hblu  = [\[1m\\[34m
+@ hgrn  = [\[1m\\[32m
+@ hcyn  = [\[1m\\[36m
+@ hred  = [\[1m\\[31m
+@ hmag  = [\[1m\\[35m
+@ hyel  = [\[1m\\[33m
+@ hwht  = [\[1m\\[37m
+@ bhwht = [\[1m\\[47m
+@ bwht  = [\[0m\\[47m
+@ bhmag = [\[1m\\[45m
+@ bmag  = [\[0m\\[45m
+@ bblu  = [\[44m
+@b=[]
+@xenon=[[(xenon!irc)]]
+@G=[${prp}${b}๚${b}${cyn}x${prp}${b}๚${b}${blk}${wht}]
+eval set format_version $xenon: $sar(/x/x/$tolower($J))${b}+${b}$sar(g/././$tolower($uname()))
+@x.actchr=[${hblk}ฎ${wht}]
+alias xecho echo $G $xenon${b}:${b} $0-
+@log=[on]
+@page=[on]
+@x.defaway=[smaq]
+@x.defback=[woopie]
+@xpath=[$W/xenon]
+@msglogfile=[$xpath/xenon.away]
+eval set nick_completion on
+@emailaddy=[$X]
+@xformat=[default]
+@xcloak=[off]
+
+
+### settings ###
+set indent on
+set load_path ~/.BitchX
+set msglog off
+set show_end_of_msgs on
+set show_who_hop_count on
+eval load $xpath/modules/xformat.m
+eval load $xpath/modules/config.m
+eval load $xpath/modules/xhelp.m
+eval if ([$x.formats]!=[yes]) {xecho Error! format module ${prp}$xpath/modules/xformat.m${wht} not loaded!}
+eval set cdcc_prompt $G 
+eval set server_prompt $G
+eval set show_numerics_str $G
+
+alias mme {
+        if (mychannels()) {
+        fe ($mychannels()) mychan {
+        if ([$mychan]==[$T]) {
+        me $0-
+        }{
+        ^describe $mychan $0-}
+}}}
+
+
+
+
+#######################################
+# away coded by ben-z @ undernet      #
+#######################################
+
+alias gone if (!A) {
+ if ([$0]) {^assign x.awmsg $0-}{^assign x.awmsg $x.defaway}
+ ^assign x.away ${cl}
+ if ([$log]==[on]) {^assign x.away l;^hook log start away logging started ${prp}-${wht} ${x.awmsg};xecho now logging messages to ${prp}$msglogfile}
+ if ([$page]==[on]) {^assign x.away ${x.away}p}
+ if ([$page]&&[$log]!=[on]) {^assign x.away na}
+ @goneat=[$time()] 
+ mme is occupied${b},${b} $x.awmsg ${b}[x${b}enon${b}!${b}${x.away}${b}]${b}
+ @am.i.away=[yes]
+ ^timer -ref 5 -reps -1 10 update.away
+ ^assign fullaway occupied${b},${b} $x.awmsg ${b}[x${b}enon${b}!${b}${x.away}${b}]
+ //away $fullaway
+}{xecho you are already away!}
+
+alias away if ([$0]) {gone $0-}{back}
+
+alias back if (A) {
+ @backat=[$time()]
+ if ([$0]) {^assign x.bmsg $0-}{^assign x.bmsg $x.defback}
+ @gonetime=[$tdiff2(${time() - u})] 
+ mme is present${b},${b} $x.bmsg ${b}[${b}${b}x${b}enon${b}!${b}$gonetime${b}]${b} 
+ //back
+ @am.i.away=[no]
+ ^timer -del 5
+ if ([$log]==[on]) {
+  ^hook log end away logging ended ${prp}-${wht} ${x.bmsg}
+   input_char "Would you like to see your away messages? " if ([$0]==[y]) {msgs}
+}}{xecho you arent away yew prosthetic teet of a hoar!#%&}
+
+alias msgs if (fexist($msglogfile)==1) {
+ xecho type ${cyn}/${prp}remlog${wht} to delete logfile.
+ more $msglogfile
+}{
+ xecho logfile ${cyn}$msglogfile${wht} not found!.
+}
+
+alias remlog {@unlink $msglogfile;^exec rm $msglogfile;xecho removed ${prp}$msglogfile${wht} log file.}
+alias update.away if (A) {
+ @nowz=[$time()]
+ @timeaway=[$tr(/ //$tdiff2(${time() - u}))]
+ @away.updated=[occupied${b}\(${b}$timeaway${b}),${b} $x.awmsg ${b}[x${b}enon${b}!${b}${x.away}${b}]${b}]
+ //away occupied${b}(${b}$timeaway${b}),${b} $x.awmsg ${b}[x${b}enon${b}!${b}${x.away}${b}]${b}  
+ @am.i.away=[yes]
+}
+
+######## /end away system ########
+
+
+alias cat exec cat $0-
+alias cig ignore $T public
+alias cl if ([$0]) {ctcp $0 CDCC LIST}{ctcp $T CDCC LIST}
+alias cm c $0-
+alias cs {if ([$0]) {if ([$1]) {ctcp $0 CDCC SEND $1}{hecho usage: /cs <nick> <number>}}{hecho usage: /cs <nick> <number>}}
+alias ee exec -o $0-
+alias err_echo echo $cparse("$G %K[%RError%K:%c$0-%K]%n")
+alias flash if ([$0]) {^msg $0 $flash(0) $flash(1) $flash(2) $flash(3) $flash(4) $flash(5)}{hecho usage: /flash <nick>}
+alias hecho echo $cparse("$*")
+alias hop if ([$0]) {l $T;j $0-}{hecho usage: /hop <channel>}
+alias la fe ($mychannels()) chan {l $chan}
+alias ls exec ls -l $0-
+alias mass if ([$0]) {
+switch ($0) {
+  (a) {fe ($chanusers($T)) nix {$1 $nix $2-}}
+  (f)
+  (n) {}
+  (o) {if (o $isin([$0]) fe ($chanusers($T)) nick {if $ischanop([$nick] $T) {[$1-] [$nick]}{}}}
+  (s) {}
+  (v) {}
+}}{hecho usage: mass <o|v|n|a|f|s> <command> [options]}
+alias massa if ([$0]) {
+ switch ($0) {
+  (a) {}
+  (f) {}
+  (n) {}
+  (o) {}
+  (s) {}
+  (v) {}
+}}{hecho usage: massa <o|v|n|a|f|s> <command> [options]}
+alias pa la
+alias partall la
+alias re redirect
+alias rig ignore $T -all
+alias rpl_echo echo $cparse("$G %K[%c$0-%K]%n")
+alias sop if ([$0]){op $0;op $0 $0;op $0 $0 $0;op $0 $0 $0 $0;op $0 $0 $0;op $0 $0;op $0}{hecho usage: /sop <nick>}
+alias sc scan
+#alias scan _scans $0
+alias tease mode $T +o-o $0 $0
+alias uv if ([$0]){unvoice $0-}{hecho usage: /uv <nicklist>}
+alias v if ([$0]){voice $0-}{hecho usage: /v <nicklist>}
+alias wc window new hide swap last double on;_status.update
+alias wk window kill
+alias wn if ([$#winrefs()] > 1){window next;_status.update}
+alias wp if ([$#winrefs()] > 1){window previous;_status.update}
+alias xl if ([$0]) {ctcp $0 XDCC LIST}{ctcp $T CDCC LIST}
+alias xs {if ([$0]) {if ([$1]) {ctcp $0 XDCC SEND $1}{hecho usage: /xs <nick> <number>}}{hecho usage: /xs <nick> <number>}}
+
+alias wj {
+if ([$0]) {@wj.chan=[$0]}{@wj.chan=[#Violators]}
+^window new hide 
+^window next
+^window channel $0
+^window double on
+^window split on
+_status.update
+}
+
+on ^channel_synch * {echo $G ${hblk}[${hcyn}s${cyn}ync${prp}!${cyn}$0${hblk}]${hwht}:${wht} synced at ${prp}$Z${cyn}.
+ if ($numonchannel($0)=1) mode $0 +tn
+}
+
+
+#on #-timer 23 * {
+# if ([$right(1 $Z)]==[1]){if (([$mid(1 1 $Z)]==[1])&&([$mid 3 2 $Z]==[11])) echo $G ${CHH}t${CH}ime${CB}:${CIH}$Z ${CB}Make a wish...}{}
+#  {if (([$mid(4 1 $Z)]==[$mid(3 1 $Z)])&&([$mid(3 1 $Z)]==[$mid(1 1 $Z)])){echo $G ${CHH}t${CH}ime${CB}:${CIH}$Z ${CB}Make a wish...}}
+# _status.update}
+on ^window "? % BitchX: *" echo $G $2-
+on ^window "? % No matches for massop of *!*@* on %" #
+on ^window "? % %  End of /NAMES list." #
+on ^window "? % % Added HTTP/FTP grab %" #
+on ^window "? % Now logging messages to: %" #
+on ^window "? % You have been marked as being away*" #
+on ^window "? % You are no longer marked as being away*" #
+# on ^window "*Type /chat to answer or /nochat to close*" #
+
+# on -connect * { echo Connected }
+
+on ^001 * #
+on ^002 * #
+on ^003 * #
+on ^004 * {
+ @_if.connect=[1]
+ quote version
+}
+on ^221 * rpl_echo Client User Mode is $1
+# on ^251 * {rpl_echo $1-}
+# on ^252 * {rpl_echo $1-}
+# on ^253 * {rpl_echo $1-}
+# on ^254 * {rpl_echo $1-}
+# on ^265 * {rpl_echo $1-}
+# on ^266 * {rpl_echo $1-}
+on ^324 * rpl_echo $1 Modes $2-
+on ^329 * #
+on ^331 * rpl_echo $1 Topic Unset
+on ^381 * rpl_echo $S Oper Modes Now Available
+on ^401 * err_echo Nick Non-Existent
+on ^402 * err_echo User Non-Existent
+on ^403 * err_echo Channel Non-Existent
+on ^404 * err_echo Send Unavailable to $1
+on ^405 * err_echo Exceeded Maximum Joined on $S
+on ^406 * err_echo Nick History Non-Existent
+on ^407 * err_echo Exceeded Maximum Number of Targets
+on ^409 * err_echo No Origin
+on ^411 * err_echo No Recipient(s)
+on ^421 * err_echo Command Unknown
+on ^422 * err_echo MOTD Non-Existent
+on ^423 * err_echo Admin Info Non-Existent
+on ^424 * err_echo File Error
+on ^431 * err_echo Nick Not Specified
+on ^432 * err_echo Nick Invalid
+on ^433 * err_echo Nick Currently Unavailable
+on ^441 * err_echo User Not in Channel
+on ^442 * err_echo Not on Channel
+on ^443 * err_echo User on Channel
+on ^444 * err_echo No Login
+on ^445 * err_echo $S Summon Command Disabled
+on ^446 * err_echo $S Users Command Disabled
+on ^451 * err_echo $S Not Fully Registered
+on ^461 * err_echo More Parameters Required
+on ^462 * err_echo $S Already Registered
+on ^463 * err_echo $S No Permissions
+on ^464 * err_echo Password Failure
+on ^467 * err_echo $1 Channel Key Previously Set (+k)
+on ^471 * err_echo $1 Channel Exceeds Limits (+l)
+on ^472 * err_echo $1 Channel Mode Unknown
+on ^473 * err_echo $1 Invite-Only Channel (+i)
+on ^474 * err_echo $1 Banned from Channel (+b)
+on ^475 * err_echo $1 Channel Key Required (+k)
+on ^481 * err_echo No Privileges
+on ^482 * err_echo $1 Channel Operator Required (+o)
+on ^483 * err_echo Cannot Kill Server
+on ^484 * err_echo $1 Desynced
+
+eval echo $G $format_version by/folk+ben-z ${CIH}loaded... - /xhelp  
+do _status.update
+
+on ^hook "log % *" {
+        @unf=open($msglogfile W T)
+        @write($unf ${hblk}[${cyn}$Z${hblk}!${prp}$tolower($[-6]1)${hblk}]${cl} $2-)
+        @close($unf)
+}
+
+on -public * if (rmatch($2- *$N*)&&[$0]!=[$N]&&[$log]==[on]&&[$am.i.away]==[yes]) {^hook log capt ${cyn}<${wht}$0${cyn}>${hblk}@${prp}$1${wht} $2-}
+on -public_other * if (rmatch($2- *$N*)&&[$0]!=[$N]&&[$log]==[on]&&[$am.i.away]==[yes]) {^hook log capt ${cyn}<${wht}$0${cyn}>${hblk}@${prp}$1${wht} $2-}
+on -msg * if ([$log]==[on]&&[$am.i.away]==[yes]) {^hook log msgs ${hblk}[${cyn}$0${prp}/${cyn}$userhost()${hblk}]${wht} $1-}
+@confi.no=[ 6]
+@nickc.no=[ 5]
+@xhelp.no=[ 7]
+alias xnick if (![$0]) {
+ echo $G ${prp}ษ${hwht}x${cyn}enon${prp}ออออออออออออออออออออออออออออ${hwht}c${cyn}urrently ${hblk}[${hwht}$nickc.no${hblk}]${prp}ออป
+ echo $G ${prp}ฬอออออออออออออออออออออออออออออออออออออออออออออออออน
+ echo $G ${prp}บ ${hblk}[ ${hwht}1${hblk}]${wht} folk: hi    ${hblk}[ ${hwht}2${hblk}]${wht} folk, hi    ${hblk}[ ${hwht}3${hblk}]${wht} folk$chr(59) hi ${prp}บ
+ echo $G ${prp}บ ${hblk}[ ${hwht}4${hblk}]${wht} folk${b},${b} hi    ${hblk}[ ${hwht}5${hblk}]${wht} folk${b}:${b} hi    ${hblk}[ ${hwht}6${hblk}]${wht} folk${b}$chr(59)${b} hi ${prp}บ
+ echo $G ${prp}บ ${hblk}[ ${hwht}7${hblk}]${wht} [folk]: hi  ${hblk}[${hwht} 8${hblk}]${wht} (folk): hi  ${hblk}[ ${hwht}9${hblk}]${wht} ${b}f${b}olk: hi ${prp}บ 
+ echo $G ${prp}บ ${hblk}[${hwht}10${hblk}]${wht} ${b}\(${b}folk${b}\)${b} hi   ${hblk}[${hwht}11${hblk}]${wht} ${b}[${b}folk${b}]${b} hi   ${hblk}[${hwht}12${hblk}]${wht} ${b}f${b}ol${b}k:${b} hi ${prp}บ
+ echo $G ${prp}บ ${hblk}[${hwht}13${hblk}]${wht} .${b}.${b}folk${b}:${b} hi  ${hblk}[${hwht}14${hblk}]${wht} ${b}!${b}folk${b}!${b} hi   ${hblk}[${hwht}15${hblk}]${wht} ${b}folk${b} hi  ${prp}บ
+ echo $G ${prp}ศอออออออออออออออออออออออออออออออออออออออออออออออออผ
+}{
+ ^assign nicktmp ${hblk}<${wht}BONK${hblk}>${wht}
+ if ([$0]==[1]) { @nickc.no=[ 1];@nickc.st=[$chr(36)0:$chr(36)1-];echo $nicktmp $N: this is your new nick completion. }
+ if ([$0]==[2]) { @nickc.no=[ 2];@nickc.st=[$chr(36)0,$chr(36)1-];echo $nicktmp $N, this is your new nick completion. }
+ if ([$0]==[3]) { @nickc.no=[ 3];@nickc.st=[$chr(36)0$chr(59)$chr(36)1-];echo $nicktmp $N$chr(59) this is your new nick completion. }
+ if ([$0]==[4]) { @nickc.no=[ 4];@nickc.st=[$chr(36)0${b},${b}$chr(36)1-];echo $nicktmp $N${b},${b} this is your new nick completion. }
+ if ([$0]==[5]) { @Nickc.no=[ 5];@nickc.st=[$chr(36)0${b}:${b}$chr(36)1-];echo $nicktmp $N${b}:${b} this is your new nick completion. }
+ if ([$0]==[6]) { @nickc.no=[ 6];@nickc.st=[$chr(36)0${b}$chr(59)${b}$chr(36)1-];echo $nicktmp $N${b}$chr(59)${b} this is your new nick completion. }
+ if ([$0]==[7]) { @nickc.no=[ 7];@nickc.st=[[$chr(36)0]:$chr(36)1-];echo $nicktmp [$N]: this is your new nick completion. }
+ if ([$0]==[8]) { @nickc.no=[ 8];@nickc.st=[($chr(36)0):$chr(36)1-];echo $nicktmp ($N): this is your new nick completion. }
+ if ([$0]==[9]) { @nickc.no=[ 9];@nickc.st=[$chr(36)0:$chr(36)1-];echo $nicktmp $sar(/$left(1 $N)/${b}$left(1 $N)${b}/$N): this is your new nick completion. }
+ if ([$0]==[10]) { @nickc.no=[10];@nickc.st=[${b}(${b}$chr(36)0${b})${b}$chr(36)1];echo $nicktmp ${b}(${b}$N${b})${b} this is your new nick completion. }
+ if ([$0]==[11]) { @nickc.no=[11];@nickc.st=[${b}[${b}$chr(36)0${b}]${b}$chr(36)1];echo $nicktmp ${b}[${b}$N${b}]${b} this is your new nick completion. }
+ if ([$0]==[12]) { @nickc.no=[12];@nickc.st=[$sar(/$left(1 $chr(36)0)/${b}$left(1 $chr(36)0${b}/$chr(36)0)];echo $nicktmp $sar(/$left(1 $N)/${b}$left(1 $N)${b}/$N)${b}:${b} this is your new nick completion. }
+ if ([$0]==[13]) { @nickc.no=[13];@nickc.st=[.${b}.${b}$chr(36)0${b}:${b}$chr(36)1-];echo $nicktmp .${b}.${b}$N${b}:${b} this is your new nick completion. }
+ if ([$0]==[14]) { @nickc.no=[14];@nickc.st=[${b}!${b}$chr(36)0${b}!${b}$chr(36)1-];echo $nicktmp ${b}!${b}$N${b}!${b} this is your new nick completion. }
+ if ([$0]==[15]) { @nickc.no=[15];@nickc.st=[${b}$chr(36)0${b}$chr(36)1-];echo $nicktmp ${b}$N${b} this is your shitty new nick completion. :P }
+ ^set format_nick_comp $nickc.st
+ ^set format_nick_auto $nickc.st 
+}
